@@ -19,16 +19,18 @@ public class OrderRepository {
 
     public void addOrder(Order order) {
         String id=order.getId();
+        if(orderDb.containsKey(id)) return;
         orderDb.put(id,order);
     }
 
     public void addPartner(String partnerId, DeliveryPartner deliveryPartner) {
-
+        if(deliveryPartnerDb.containsKey(partnerId)) return;
         deliveryPartnerDb.put(partnerId,deliveryPartner);
     }
 
     public void addOrderPartnerPair(String orderId, String partnerId) {
 
+        if(partnerOrderDb.containsKey(partnerId)) return;
         orderPartnerDb.put(orderId,partnerId);
        if(orderDb.containsKey(orderId) && deliveryPartnerDb.containsKey(partnerId))
        {
