@@ -15,7 +15,7 @@ public class OrderRepository {
     HashMap<String,DeliveryPartner> deliveryPartnerDb=new HashMap<>();
 
     HashMap<String,String> orderPartnerDb=new HashMap<>();
-    HashMap<String,List<String>>partnerOrderDb=new HashMap<>();
+    HashMap<String,List<String>> partnerOrderListDb =new HashMap<>();
 
     public void addOrder(Order order) {
         String id=order.getId();
@@ -30,21 +30,20 @@ public class OrderRepository {
 
     public void addOrderPartnerPair(String orderId, String partnerId) {
 
-        if(partnerOrderDb.containsKey(partnerId)) return;
+        if(orderPartnerDb.containsKey(orderId)) return;
         orderPartnerDb.put(orderId,partnerId);
-       if(orderDb.containsKey(orderId) && deliveryPartnerDb.containsKey(partnerId))
-       {
+
            List<String> orderList=new ArrayList<>();
 
-           if(partnerOrderDb.containsKey(partnerId))
+           if(partnerOrderListDb.containsKey(partnerId))
            {
-               orderList=partnerOrderDb.get(partnerId);
+               orderList= partnerOrderListDb.get(partnerId);
            }
            orderList.add(orderId);
-           partnerOrderDb.put(partnerId,orderList);
+           partnerOrderListDb.put(partnerId,orderList);
            deliveryPartnerDb.get(partnerId).setNumberOfOrders(orderList.size());
 
-       }
+
 
     }
 
@@ -57,15 +56,15 @@ public class OrderRepository {
     }
 
     public Integer getOrderCountByPartnerId(String partnerId) {
-       return partnerOrderDb.get(partnerId).size();
+       return partnerOrderListDb.get(partnerId).size();
     }
 
     public List<String> getOrdersByPartnerId(String partnerId) {
         List<String> orderList=new ArrayList<>();
 
-        if(partnerOrderDb.containsKey(partnerId))
+        if(partnerOrderListDb.containsKey(partnerId))
         {
-            orderList=partnerOrderDb.get(partnerId);
+            orderList= partnerOrderListDb.get(partnerId);
         }
         return orderList;
     }
@@ -92,7 +91,7 @@ public class OrderRepository {
     public Integer getOrdersLeftAfterGivenTimeByPartnerId(int time, String partnerId) {
 
         Integer cnt=0;
-        for (String order :partnerOrderDb.get(partnerId))
+        for (String order : partnerOrderListDb.get(partnerId))
         {
             if(orderDb.get(order).getDeliveryTime()>time)
             {
@@ -104,7 +103,7 @@ public class OrderRepository {
     }
 
     public int getLastDeliveryTimeByPartnerId(String partnerId) {
-        List<String> orderList=partnerOrderDb.get(partnerId);
+        List<String> orderList= partnerOrderListDb.get(partnerId);
 
         //sort based on time
         Collections.sort(orderList,(a,b)->{
@@ -128,7 +127,7 @@ public class OrderRepository {
                 }
             }
 
-            partnerOrderDb.remove(partnerId);
+            partnerOrderListDb.remove(partnerId);
             deliveryPartnerDb.remove(partnerId);
         }
     }
@@ -139,9 +138,9 @@ public class OrderRepository {
             String partnerId=orderPartnerDb.get(orderId);
             orderPartnerDb.remove(orderId);
 
-           List<String> olist=partnerOrderDb.get(partnerId);
+           List<String> olist= partnerOrderListDb.get(partnerId);
            olist.remove(orderId);
-           partnerOrderDb.put(partnerId,olist);
+           partnerOrderListDb.put(partnerId,olist);
         }
         orderDb.remove(orderId);
     }
