@@ -1,0 +1,148 @@
+package com.driver;
+
+import org.springframework.stereotype.Repository;
+
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+@Repository
+public class OrderRepository {
+
+    HashMap<String,Order>orderDb=new HashMap<>();
+    HashMap<String,DeliveryPartner> deliveryPartnerDb=new HashMap<>();
+
+    HashMap<String,String> orderPartnerDb=new HashMap<>();
+    HashMap<String,List<String>>partnerOrderDb=new HashMap<>();
+
+    public void addOrder(Order order) {
+        String id=order.getId();
+        orderDb.put(id,order);
+    }
+
+    public void addPartner(String partnerId, DeliveryPartner deliveryPartner) {
+
+        deliveryPartnerDb.put(partnerId,deliveryPartner);
+    }
+
+    public void addOrderPartnerPair(String orderId, String partnerId) {
+
+        orderPartnerDb.put(orderId,partnerId);
+       if(orderDb.containsKey(orderId) && deliveryPartnerDb.containsKey(partnerId))
+       {
+           List<String> orderList=new ArrayList<>();
+
+           if(partnerOrderDb.containsKey(partnerId))
+           {
+               orderList=partnerOrderDb.get(partnerId);
+           }
+           orderList.add(orderId);
+           partnerOrderDb.put(partnerId,orderList);
+           deliveryPartnerDb.get(partnerId).setNumberOfOrders(orderList.size());
+
+       }
+
+    }
+
+    public Order getOrderById(String orderId) {
+            return orderDb.get(orderId);
+    }
+
+    public DeliveryPartner getPartnerById(String partnerId) {
+        return deliveryPartnerDb.get(partnerId);
+    }
+
+    public Integer getOrderCountByPartnerId(String partnerId) {
+        DeliveryPartner deliveryPartner=deliveryPartnerDb.get(partnerId);
+        return deliveryPartner.getNumberOfOrders();
+    }
+
+    public List<String> getOrdersByPartnerId(String partnerId) {
+        List<String> orderList=new ArrayList<>();
+
+        if(partnerOrderDb.containsKey(partnerId))
+        {
+            orderList=partnerOrderDb.get(partnerId);
+        }
+        return orderList;
+    }
+
+    public List<String> getAllOrders() {
+
+        List<String> orders=new ArrayList<>(orderDb.keySet());
+        return orders;
+    }
+
+    public Integer getCountOfUnassignedOrders() {
+
+        Integer cnt=0;
+
+        for(String key:orderDb.keySet())
+        {
+            if(!orderPartnerDb.containsKey(key))
+            {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    public Integer getOrdersLeftAfterGivenTimeByPartnerId(int time, String partnerId) {
+
+        Integer cnt=0;
+        for (String order :partnerOrderDb.get(partnerId))
+        {
+            if(orderDb.get(order).getDeliveryTime()>time)
+            {
+                cnt++;
+            }
+        }
+        return cnt;
+
+    }
+
+    public int getLastDeliveryTimeByPartnerId(String partnerId) {
+        List<String> orderList=partnerOrderDb.get(partnerId);
+
+        //sort based on time
+        Collections.sort(orderList,(a,b)->{
+            return orderDb.get(a).getDeliveryTime()-orderDb.get(b).getDeliveryTime();
+        });
+
+        String orderId= orderList.get(orderList.size()-1);
+        return orderDb.get(orderId).getDeliveryTime();
+
+    }
+
+    public void deletePartnerById(String partnerId) {
+
+        if(deliveryPartnerDb.containsKey(partnerId))
+        {
+            for(String orderId:orderPartnerDb.keySet())
+            {
+                if(orderPartnerDb.get(orderId).equals(partnerId))
+                {
+                    orderPartnerDb.remove(orderId);
+                }
+            }
+
+            partnerOrderDb.remove(partnerId);
+            deliveryPartnerDb.remove(partnerId);
+        }
+    }
+
+    public void deleteOrderById(String orderId) {
+        if(orderPartnerDb.containsKey(orderId))
+        {
+            String partnerId=orderPartnerDb.get(orderId);
+            orderPartnerDb.remove(orderId);
+
+           List<String> olit=partnerOrderDb.get(partnerId);
+           olit.remove(orderId);
+           partnerOrderDb.put(partnerId,olit);
+        }
+        orderDb.remove(orderId);
+    }
+}
