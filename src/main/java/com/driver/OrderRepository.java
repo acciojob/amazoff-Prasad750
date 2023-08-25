@@ -71,8 +71,7 @@ public class OrderRepository {
 
     public List<String> getAllOrders() {
 
-        List<String> orders=new ArrayList<>(orderDb.keySet());
-        return orders;
+        return new ArrayList<>(orderDb.keySet());
     }
 
     public Integer getCountOfUnassignedOrders() {
@@ -139,9 +138,9 @@ public class OrderRepository {
             String partnerId=orderPartnerDb.get(orderId);
             orderPartnerDb.remove(orderId);
 
-           List<String> olit=partnerOrderDb.get(partnerId);
-           olit.remove(orderId);
-           partnerOrderDb.put(partnerId,olit);
+           List<String> olist=partnerOrderDb.get(partnerId);
+           olist.remove(orderId);
+           partnerOrderDb.put(partnerId,olist);
         }
         orderDb.remove(orderId);
     }
